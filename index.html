@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Task Manager</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f2f2f2;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 650px;
+            margin: 40px auto;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 0 12px #ccc;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        .input-area {
+            display: flex;
+            gap: 10px;
+        }
+
+        input {
+            flex: 1;
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .add-btn {
+            padding: 12px 18px;
+            border: none;
+            background: #333;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .stat {
+            flex: 1;
+            padding: 12px;
+            margin: 5px;
+            background: #eee;
+            border-radius: 8px;
+        }
+
+        .stat-number {
+            display: block;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #eee;
+            margin-top: 10px;
+            padding: 12px;
+            border-radius: 5px;
+        }
+
+        .task-text {
+            flex: 1;
+            font-size: 17px;
+        }
+
+        .completed {
+            text-decoration: line-through;
+            color: gray;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .complete-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 7px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .delete-btn {
+            background: #d9534f;
+            color: white;
+            border: none;
+            padding: 7px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>📝 Student Task Manager</h1>
+
+    <div class="input-area">
+        <input type="text" id="taskInput" placeholder="Enter a task">
+        <button class="add-btn" onclick="addTask()">Add</button>
+    </div>
+
+    <div class="stats">
+
+        <div class="stat">
+            <span class="stat-number" id="totalTasks">0</span>
+            Total
+        </div>
+
+        <div class="stat">
+            <span class="stat-number" id="completedTasks">0</span>
+            Completed
+        </div>
+
+        <div class="stat">
+            <span class="stat-number" id="pendingTasks">0</span>
+            Pending
+        </div>
+
+    </div>
+
+    <ul id="taskList"></ul>
+
+</div>
+
+<script>
+
+let tasks = [];
+
+function loadTasks() {
+    let savedTasks = localStorage.getItem("studentTasks");
+
+    if (savedTasks) {
+        tasks = JSON.parse(savedTasks);
+    }
+}
+
+function saveTasks() {
+    localStorage.setItem("studentTasks", JSON.stringify(tasks));
+}
+
+function updateStats() {
+
+    let total = tasks.length;
+
+    let completed = 0;
+
+    for (let i = 0; i < tasks.length; i++) {
+        if (tasks[i].completed === true) {
+            completed++;
+        }
+    }
+
+    let pending = total - completed;
+
+    document.getElementById("totalTasks").textContent = total;
+    document.getElementById("completedTasks").textContent = completed;
+    document.getElementById("pendingTasks").textContent = pending;
+}
+
+function displayTasks() {
+
+    let taskList = document.getElementById("taskList");
+
+    taskList.innerHTML = "";
+
+    for (let i = 0; i < tasks.length; i++) {
+
+        let task = tasks[i];
+
+        let li = document.createElement("li");
+
+        let span = document.createElement("span");
+
+        span.textContent = task.text;
+        span.className = "task-text";
+
+        if (task.completed === true) {
+            span.classList.add("completed");
+        }
+
+        let buttons = document.createElement("div");
+
+        buttons.className = "buttons";
+
+        let completeButton = document.createElement("button");
+
+        completeButton.className = "complete-btn";
+
+        if (task.completed === true) {
+            completeButton.textContent = "↩ Undo";
+        } else {
+            completeButton.textContent = "✅ Complete";
+        }
+
+        completeButton.onclick = function() {
+
+            task.completed = !task.completed;
+
+            saveTasks();
+
+            displayTasks();
+        };
+
+        let deleteButton = document.createElement("button");
+
+        deleteButton.textContent = "Delete";
+        deleteButton.className = "delete-btn";
+
+        deleteButton.onclick = function() {
+
+            tasks.splice(i, 1);
+
+            saveTasks();
+
+            displayTasks();
+        };
+
+        buttons.appendChild(completeButton);
+        buttons.appendChild(deleteButton);
+
+        li.appendChild(span);
+        li.appendChild(buttons);
+
+        taskList.appendChild(li);
+    }
+
+    updateStats();
+}
+
+function addTask() {
+
+    let input = document.getElementById("taskInput");
+
+    let taskText = input.value.trim();
+
+    if (taskText === "") {
+        alert("Please enter a task!");
+        return;
+    }
+
+    let newTask = {
+        text: taskText,
+        completed: false
+    };
+
+    tasks.push(newTask);
+
+    saveTasks();
+
+    displayTasks();
+
+    input.value = "";
+}
+
+loadTasks();
+
+displayTasks();
+
+</script>
+
+</body>
+</html>
